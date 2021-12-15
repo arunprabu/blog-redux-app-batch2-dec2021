@@ -1,0 +1,720 @@
+Redux 
+---
+Step 0: 
+  npm i redux react-redux 
+
+  redux  - core redux framework 
+  react-redux   -- patches up react with redux seamlessy 
+
+Step 1: 
+  In src/index.js Setup the the Redux Store here
+  import { createStore } from 'redux';
+
+
+Step 2: 
+  Exec createStore() method and save it in a variable 
+  const store = createStore(); //this needs a special param called 'reducer'
+
+
+Step 3: [Refer reducers/postReducer.js]  Setup Reducer for the store
+  What's a Reducer?
+    It is a function that takes the current state and 
+    an action that was dispatched as it’s parameters and returns the new state.
+
+  In reducers/postReducer.js, Have the following code 
+
+    // Setting up postReducer so that
+    // we can combine this reducer with other reducers later 
+    // and make a big object for the store 
+    // reducer should mandatorily return a state. 
+    const postReducer = (state = [], action) => {
+      switch(action.type) {
+        case 'ADD_POST':
+          return state.concat([action.data]);
+        default:
+          return state;
+      }
+    }
+    export default postReducer;
+
+  ====
+
+
+Step4: in reducers/index.js 
+  work on combining all reducers for the entire app
+  and have the following code 
+
+    //Step 4.1: Combining Reducers using Redux's combineReducers
+    import {combineReducers} from 'redux';
+
+    //Step 4.2 loading all reducers
+    import postReducer from './postReducer'; 
+
+    ////Step 4.3 combine all reducers into one big object for store
+    const rootReducer = combineReducers({
+      posts: postReducer
+    });
+
+    //Step 4.4 exporing the rootReducer -- that is the combined reducer
+    export default rootReducer; 
+
+====
+
+
+Step 5: in src/index.js, Setup reducer for the store
+  //let’s import the combineReducer 
+  //and pass it to the store as an argument.
+  
+  import rootReducers from './reducers'; 
+  const store = createStore(rootReducers); 
+
+=====
+
+
+Step 6: In src/index.js, inside the ReactDOM.render() block,
+  Provide the store data to the entire app 
+    
+    For the following to work.. 
+    import { Provider } from 'react-redux'; 
+
+    //Definition: The Provider component uses something 
+      //called as React Context which allows you to pass the 
+      //store object to any components 
+      //that needs to access it without the need to pass props.
+      //Provider should be imported from react-redux 
+    
+    ReactDOM.render(
+      <React.StrictMode>
+        <Provider store={store}>  {/* this is how we have to provide store data to the app --> */} 
+          <App />
+        </Provider>
+      </React.StrictMode>
+    ,
+    document.getElementById('root')
+  );
+
+=====
+
+Step 7:
+  create actions/types.js file for the various actions of the app's feature 
+  have the following code in it.
+
+  export const ADD_POST = 'ADD_POST';
+  export const GET_POSTS = 'GET_POSTS';
+  export const GET_POST_BY_ID = 'GET_POST_BY_ID';
+  export const EDIT_POST = 'EDIT_POST';
+  export const DELETE_POST = 'DELETE_POST';
+
+====
+
+Step 8:
+  Have reducers/postReducer.js to have better switch case statement 
+  with much more scalable code by using the action types 
+
+  import { ADD_POST, GET_POSTS, EDIT_POST, DELETE_POST } from "../actions/types";
+    
+  const postReducer = (state = [], action) => {
+    // Step 8.1 
+      //now it is time to understand the concept called 'Actions'
+      //What are Actions? 
+        //Actions are plain Javascript objects with a type property. 
+        //This type property describes the event that is taking place 
+        //in the application.
+    switch(action.type) {
+      case ADD_POST:
+        //Step 8.2 - clarification - of the following code, 
+        //action.type = Event and action.data = Form Data from Add Post
+        let addPostState = [
+        ...state,
+        action.payload
+      ];
+      return addPostState;
+      case GET_POSTS: 
+        return state; // not implemented yet
+      case GET_POST_BY_ID: 
+        return state; // not implemented yet
+      case EDIT_POST: 
+        return state;  // not implemented yet
+      case DELETE_POST:
+        return state.filter((post)=>post.id !== action.id);
+      default:
+        return state;
+    }
+  }
+
+====
+
+Step 9:
+  Almost done... 
+  to dispatch action, let's write form submission logic in PostForm.js
+
+  // Step 9.1
+  form code can be  the following with ref's and submission logic 
+    <form onSubmit={this.handleSubmit}>
+      <input required type="text"
+        placeholder="Enter Post Title"
+        className='form-control' ref={(input) => this.getTitle = input} /><br />
+      <textarea required rows="5" cols="28"
+        placeholder="Enter Post"
+        className='form-control' ref={(input) => this.getContent = input} /><br />
+      <button className='btn btn-primary' type='submit'>Post</button>
+    </form>
+
+    // Step 9.2 then, work on handleSubmit method 
+    handleSubmit = (e) => {
+      e.preventDefault();
+      const title = this.getTitle.value;
+      const body = this.getContent.value;
+      const data = {
+        title,
+        body
+      }
+      console.log(data);
+    }
+
+Step 10:
+  In the same PostForm.js component, 
+  import {connect} from 'react-redux';
+  
+  // Step 10.1
+  //last line of the compoent should be the following. 
+  // after connecting props will be available in this component. 
+  
+  export default connect()(PostForm); 
+
+Step 11: 
+  It is time to dispatch actions from form submission logic 
+  // connect() helps props have dispatch method
+  // using it we can dispatch action with type and data (payload)
+  so, inside the handleSubmit logic, have a console.log(this.props);
+  
+    handleSubmit = (e) => {
+      e.preventDefault();
+      const title = this.getTitle.value;
+      const body = this.getContent.value;
+      const data = {
+        title,
+        body
+      }
+      console.log(data);
+      console.log(this.props);
+    }
+
+=====
+Step 12: 
+  Create a file services/postService.js 
+  and then have the following logic in it
+
+  import axios from 'axios';
+  import { ADD_POST } from "../actions/types";
+  const POSTS_API_URL = 'https://jsonplaceholder.typicode.com/posts';
+
+  export const createPost = (data) => {
+    return (dispatch) => {
+      // AJAX call to add a post
+      return axios.post(POSTS_API_URL, data )
+        .then(response => {
+            
+            dispatch({
+              type: ADD_POST,
+              payload: {
+                id: response.data.id,
+                title: response.data.title,
+                body: response.data.body
+              }
+            });
+        })
+        .catch(error => {
+            throw (error);
+        })
+        .finally( () => {
+          
+        }) 
+    };
+  };
+
+======
+Step 13: 
+  Dispatch the action in PostForm.js submission logic
+
+  import { createPost } from '../../services/postService';
+
+  handleSubmit = (e) => {
+      e.preventDefault();
+      const title = this.getTitle.value;
+      const body = this.getContent.value;
+      const data = {
+        title,
+        body
+      }
+      console.log(data);
+      console.log(this.props);
+      this.props.dispatch(createPost( data )); // this is the service method
+    }
+  
+Step 14: 
+  Check the error in console and fix it..
+  The error says...
+  Uncaught Error: Actions must be plain objects. Instead, the actual type was: 'function'. 
+  You may need to add middleware to your store setup to handle dispatching other values, 
+  such as 'redux-thunk' to handle dispatching functions.
+
+  // Step 14.1
+  install the following packages.
+    npm i redux-logger redux-thunk
+  
+  // Step 14.2
+  then, go to src/index.js 
+    import logger from 'redux-logger'; // npm i redux-logger 
+    import thunk from 'redux-thunk';  //npm i redux-thunk
+
+  // step 14.3
+  use redux-thunk middleware for async actions
+    import { createStore, applyMiddleware } from 'redux';
+  
+    const store = createStore( rootReducer, applyMiddleware(thunk, logger) );
+
+===
+Step 15: 
+  Check the app.. try creating a blog post.. it should work well. 
+  we should be able to create a blog post.  (POST method is over)
+
+  Create blog post operation is over. 
+  Now, let's work on Listing Blog posts (Read operation)
+
+====
+Step 16: 
+  in PostList.js, let's get the state data from the store and 
+  convert them into read-only props. 
+  Redux's core purpose is to get rid of state across the app and make it props. 
+
+  // Step 16.1
+    import { connect } from 'react-redux';
+
+  // Step 16.2
+  to get the state and to convert that to props 
+  in the PostList.js file, make the following change in the export.
+
+    export default connect(mapStateToProps)(PostList);
+  
+  //mapStateToProps() method should be defined in the same file before the export
+  
+    const mapStateToProps = (state) => {
+      return {
+          posts: state.posts
+      }
+    } 
+  
+  The above function will convert state to props for the PostList compoent.
+  By doing the above this comp will no longer have state. 
+
+
+=====
+Step 17: 
+  Work within PostList.js Component's render method 
+
+  have the following lists and key 
+    render() {
+      let posts = null;
+      if(this.props.posts && this.props.posts.length > 0){
+        posts = this.props.posts.map((post) =>{
+          console.log(post);
+          return(
+            <Post id={post.id} 
+              title={post.title} 
+              message={post.body} key={post.id}></Post>
+          )
+        });
+      }
+
+      return (
+        <div className='container'>
+          <h3>Post List</h3>
+          { this.props.posts && this.props.posts.length > 0? 
+            posts
+            :
+            <div className='alert alert-danger'>
+              No Posts Found. You can add one!
+            </div>
+          }
+        </div>
+      );
+    }
+
+Step 18:
+====
+  Now, let's think about getting all posts on load 
+  
+  Note: 
+  if the post list should be loaded for the home page to display...
+  then, in src/index.js we have to write logic to load posts at first.
+
+    import { getAllPosts } from './services/postsService';
+    
+    //To Setup Initial Loading -- for diplaying something at first load -- from rest api call
+    store.dispatch(getAllPosts());
+
+  ------ 
+  But, our home page url should not show the all posts. But posts url.
+  So, we have to now dispatch an action to getAllPosts in PostList.js 
+    import { getAllPosts } from './services/postsService';
+
+  Then, Inside the life cycle hook, 
+
+    componentDidMount(){
+      // send ajax calls to load all posts..
+      // dispatch event 
+      this.props.dispatch(getAllPosts());
+    }
+
+====
+Step 19: 
+  So, services/postService.js should have the following code. 
+
+    //Initial Load to fetch all posts
+    export const getAllPosts = () => {
+      return (dispatch) => {
+        return axios.get(POSTS_API_URL)
+          .then(response => {
+            //calling the above util method to process data, 
+            // that are ready to be sent to post reducer
+            dispatch({
+              type: GET_POSTS,
+              response.data
+            });
+          })
+          .catch(error => {
+            throw(error);
+          });
+      };
+    };
+
+====
+Step 20: 
+
+  Check the app! The app should display all posts on load. 
+  Read operation is also over. (GET method)
+
+===
+Step 21:
+  Let's work on another GET
+  getPostById 
+
+  in postService.js 
+
+    //Initial Load to get post by id
+    export const getPostById = (postId) => {
+      return (dispatch) => {
+        return axios.get(POSTS_API_URL+'/'+postId)
+          .then(response => {
+            //without util method, you can try like the following
+            // this will hit the postReducer
+            dispatch({
+              type: GET_POST_BY_ID,
+              post: response.data
+            })
+          })
+          .catch(error => {
+            throw(error);
+          });
+      };
+    };
+
+===
+Step 22: 
+  In PostDetails.js, in its life cycle hook 
+
+  Have the following HOC because props will not have 
+  url params in class comp after react-router-dom v6.
+
+  const withRouter = (WrapperComponent) => {
+    return (props) => {
+      const location = useLocation();
+      const navigation = useNavigate();
+      const params = useParams();
+
+      return(
+        <WrapperComponent 
+          {...props}
+          navigation={navigation}
+          location={location}
+          params={params}
+        />
+      )
+    }
+  }
+
+  class PostDetails extends Component {
+
+    componentDidMount(){
+      // Let's hit the service method to get one post details
+      // Read URL Param in React
+      console.log(this.props.params.postId); // this is url param -- sent from mapPropsToDispatch 
+      this.props.dispatch(getPostById(this.props.params.postId)); 
+    }
+    ....
+    ...
+    // render will come here 
+
+  }
+
+  And When you export do the following 
+  export default withRouter(connect(mapStateToProps)(PostDetails));
+
+
+====
+Step 23: 
+  And in postReducer.js 
+  inside switch case... make a correction like the following
+
+  case GET_POST_BY_ID: 
+      return action.post; 
+
+Step 24: 
+  Then, to get the data as props in PostDetails.js,
+  import { connect } from 'react-redux';
+
+  And also have the following code
+
+  const mapStateToProps = (state) => {
+    // it is from state.posts 
+    // not from state.post because of the way it is mentioned in combined reducer
+    return {
+        post: state.posts 
+    }
+  }
+
+  export default connect(mapStateToProps)(PostDetails);
+
+=====
+Step 25: 
+  Inside render() method of PostDetails.js,
+    render() {
+      console.log(this.props);
+      return (
+        <div className='container'>
+          <h1>Post Details</h1>
+          <div className="list-group">
+            <div className="list-group-item">
+              <div className="d-flex w-100 justify-content-between">
+                <h5 className="mb-1">{this.props.post.title}</h5>
+                <small>Post Id: {this.props.post.id}</small>
+              </div>
+              <p className="mb-1">
+                {this.props.post.body}
+              </p>
+              <small>UserId: {this.props.post.userId}</small>
+              <br />
+              <button className='btn btn-primary' >Edit</button> &nbsp;
+              <button className='btn btn-danger'>Delete</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+Step 26: 
+  Check the app! Get Post details will also work fine. 
+  So another GET is over. 
+  We can work on Update / Delete Post  
+
+Step 27: 
+  Now, Let's work on delete. We'll work on update later.
+  In PostDetails.js,
+
+  // Step 27.1
+  import { getPostById, deletePost } from '../../services/postService';
+
+  // Step 27.2
+  handleDelete = () => {
+    this.props.dispatch(deletePost(this.props.post.id));
+  }
+
+  // Step 27.3
+  <button className='btn btn-danger' onClick={this.deleteHandler}>Delete</button>
+
+Step 28: 
+  Then, work on postService.js
+
+  add a new method there..
+
+    //Delete Post by postId
+    export const deletePost = (postId) => {
+      return (dispatch) => {
+        return axios.delete(POSTS_API_URL+'/'+postId)
+          .then(response => {
+            //without util method, you can try like the following
+            // this will hit the postReducer
+            dispatch({
+              type: DELETE_POST,
+              post: response.data
+            })
+          })
+          .catch(error => {
+            throw(error);
+          });
+      };
+    };
+
+Step 29: 
+  In switch case of postReducer.js 
+
+    case DELETE_POST:
+      return action.post;
+
+  That's it.. Check the app! delete will also work. 
+  The data from the backend is wrong.. 
+  because of it our app doesn't work well for delete action. 
+
+  we have to filter the items from postReducer's switch case... 
+
+===
+Step 30: 
+  We have to work on update operation. 
+
+  In PostDetails.js,
+  have the edit button to open bootstrap modal
+    <button className='btn btn-primary' 
+    data-toggle='modal' 
+    data-target='#editModal'>Edit</button> &nbsp;
+
+  And have the modal code,
+  <div className="modal fade" id="editModal"
+      tabIndex={-1}
+      role="dialog"
+      aria-labelledby="exampleModalLabel"
+      aria-hidden="true">
+      <div className="modal-dialog" role="document">
+        <div className="modal-content">
+          <div className="modal-header">
+            <h5 className="modal-title" id="exampleModalLabel">
+              Update Post
+            </h5>
+            <button
+              type="button"
+              className="close"
+              data-dismiss="modal"
+              aria-label="Close">
+              <span aria-hidden="true">×</span>
+            </button>
+          </div>
+          <div className="modal-body">
+            <form onSubmit={this.handleEditPost}>
+              <input required type="text"
+                placeholder="Enter Post Title"
+                className='form-control' 
+                defaultValue={this.props.post.title} 
+                ref={(input) => this.getTitle = input} /><br />
+              <textarea required rows="5" cols="28"
+                placeholder="Enter Post" 
+                className='form-control'
+                defaultValue={this.props.post.body} 
+                ref={(input) => this.getContent = input} /><br />
+              <button className='btn btn-primary' type='submit'>Save Changes</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+Step 31: 
+  Define handleEditPost function there and capture the form data,
+  then dispatch ac action to editPost 
+    handleEditPost = (e) => {
+      e.preventDefault();
+      const title = this.getTitle.value;
+      const body = this.getContent.value;
+      const data = {
+        id: this.props.post.id,
+        title,
+        body
+      }
+      console.log(data);
+      
+      this.props.dispatch(editPost( data ));
+      this.getTitle.value = '';
+      this.getContent.value = '';
+    }
+
+Step 32: 
+  For the above to work, define editPost method in postService.js
+    //Update post
+    export const editPost = (data) => {
+      return (dispatch) => {
+        return axios.put(POSTS_API_URL+'/'+data.id, data )
+          .then(response => {
+            dispatch({
+              type: EDIT_POST,
+              post: response.data
+            })
+          })
+          .catch(error => {
+              throw (error);
+          });
+      };
+    };
+
+Step 33: Finally, work with the switch case in postReducer.js 
+  case EDIT_POST: 
+      return action.post;
+
+That's all. CRUD Operation is over!
+
+
+Note: Add Toastr (react-redux-toastr )
+
+Other Important Notes:
+1) How to Include Bootstrap in React App?
+    npm i bootstrap --save 
+    then,
+    in index.js 
+    import 'bootstrap/dist/css/bootstrap.css'
+
+2) Debugging (Writing debuggable code)
+  Use redux dev tools extension
+  Read the doc and config the app to use the extension.
+  you can configure it for production also.
+
+3) Working with action creators
+  // we can create custom event handlers -- they will be available in props
+  const mapDispatchToProps = dispatch => {
+    return {
+      onDelete: id => {
+        dispatch(deletePost(id));
+      }
+    };
+  };
+
+  export default connect(mapStateToProps, mapDispatchToProps)(PostList);
+
+4) Webpack and it's config 
+  npm run eject
+
+
+===
+Understanding Immutatability in Redux 
+--
+https://redux.js.org/recipes/structuring-reducers/immutable-update-patterns
+Solutions 
+1. Use ES2015 or else 
+2. Use Immer JS https://immerjs.github.io/immer/docs/introduction
+   https://immerjs.github.io/immer/docs/example-reducer
+
+
+
+Another project Strucutre
+----
+  components
+  containers 
+  store/
+    configureStore.js 
+    rootReducer.js
+    posts/
+      types.js 
+      reducer.js 
+      actions.js   == service.js 
+    contacts/
+      types.js 
+      reducer.js 
+      actions.js   == service.js 

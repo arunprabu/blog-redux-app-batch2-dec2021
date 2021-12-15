@@ -1,0 +1,64 @@
+SPA Characteristics 
+---
+  1. Pages should not refresh [Done]
+  2. URL should Change [Done]
+  3. History should be maintained [Done]
+  4. Header and Footer should be intact [Done]
+  5. Content should be updated In b/w header and footer. [Done]
+  6. Active Menu should be set [TODO]
+  7. Page Title should change [TODO]
+
+
+React Router DOM Setup 
+----
+  Step 0: 
+    npm i react-router-dom
+
+  Step 1: 
+    Identify the URLs and the matching comp 
+
+    localhost:3000/           - Home Comp 
+    localhost:3000/posts      - Posts Comp 
+    localhost:3000/about      - About Comp 
+
+    Let's now setup the URL's in menu's in Header comp 
+
+  Step 2: 
+    Check, the URL will change. Now, let's load the comp in between header and footer.
+
+    Create 3 comp's namely Home, Posts, About as fn comp's 
+
+
+  Step 3: 
+    For that to be setup, let's config the routes in App.js 
+       <BrowserRouter>
+          <div>
+            <Header />
+
+            <main className="container mt-5">
+              {/* ideal place for us to have router config's  */}
+
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/posts" element={<Posts />} />
+                <Route path="/about" element={<About />} />
+              </Routes>
+            </main>
+
+            <Footer />
+
+          </div>
+        </BrowserRouter>
+
+    Step 4: 
+    ---
+      Check the app. Components would be loaded in b/w header and footer. But, pages will still refresh. 
+      Let's fix it.
+
+      Replace all <a href> to <Link to>
+
+      Check the app. You have an SPA.
+
+
+
+

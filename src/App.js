@@ -19,7 +19,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/posts" element={<Posts />} />
-            <Route path="/posts/1" element={<PostDetails />} />
+            <Route path="/posts/:postId" element={<PostDetails />} />  {/* postId is URL Param */}
             <Route path="/about" element={<About />} />
           </Routes>
         </main>

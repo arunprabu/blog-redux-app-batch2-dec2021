@@ -1,8 +1,19 @@
 import React, { Component } from 'react'
+import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
+import { getPostById } from '../services/postService';
 
 class PostDetails extends Component {
+
+  componentDidMount(){
+    // reading URL Param - postId
+    // console.log(this.props.match.params.postId); // deprecated in v6
+
+    this.props.dispatch(getPostById(1)); 
+  }
+
   render() {
+    console.log(this.props.post);
     return (
       <div className='container'>
         <h1>Post Details</h1>
@@ -11,11 +22,11 @@ class PostDetails extends Component {
           <div className="list-group">
             <div className="list-group-item">
               <div className="d-flex w-100 justify-content-between">
-                <h5 className="mb-1">My post title 1</h5>
-                <small>Post Id: 1</small>
+                <h5 className="mb-1">{this.props.post.title}</h5>
+                <small>Post Id: {this.props.post.id}</small>
               </div>
               <p className="mb-1">
-                my content 1
+                {this.props.post.body}
               </p>
               <br />
               <button className='btn btn-primary'
@@ -66,4 +77,10 @@ class PostDetails extends Component {
   }
 }
 
-export default PostDetails;
+const mapStateToProps = (state) => { 
+  return {
+    post: state.posts // prop name is post
+  }
+}
+
+export default connect(mapStateToProps)(PostDetails);
