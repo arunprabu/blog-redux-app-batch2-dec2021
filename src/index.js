@@ -11,6 +11,8 @@ import reportWebVitals from './reportWebVitals';
 // Step 1: Setup the the Redux Store here
 import { createStore, applyMiddleware } from 'redux';
 
+import { composeWithDevTools } from 'redux-devtools-extension';
+
 // Step 14: Let's add middleware to work with async actions.
 // npm i redux-logger redux-thunk
 import logger from 'redux-logger'; // npm i redux-logger 
@@ -30,7 +32,7 @@ import { Provider } from 'react-redux';
 import rootReducer from './reducers'; 
 
 // Step 2: Exec createStore() method and save it in a variable
-const store = createStore(rootReducer, applyMiddleware(thunk, logger)); //this needs a special param called 'reducer' 
+const store = createStore(rootReducer, composeWithDevTools(applyMiddleware(thunk, logger))); //this needs a special param called 'reducer' 
 // We have combined the reducers --- so, passing the rootReducer to the createStore() fn.
 console.log(store); // store has dispatch, subscribe properties
 

@@ -458,6 +458,13 @@ Step 22:
 
   }
 
+  const mapStateToProps = (state, props) => { 
+    return {
+      post: state.posts, // prop name is post
+      postId: props.params.postId // postId is the URL Param
+    }
+  }
+
   And When you export do the following 
   export default withRouter(connect(mapStateToProps)(PostDetails));
 
@@ -547,7 +554,7 @@ Step 28:
             // this will hit the postReducer
             dispatch({
               type: DELETE_POST,
-              post: response.data
+              payload: response.data
             })
           })
           .catch(error => {
@@ -560,7 +567,7 @@ Step 29:
   In switch case of postReducer.js 
 
     case DELETE_POST:
-      return action.post;
+      return action.payload;
 
   That's it.. Check the app! delete will also work. 
   The data from the backend is wrong.. 
@@ -669,14 +676,20 @@ Other Important Notes:
     npm i bootstrap --save 
     then,
     in index.js 
-    import 'bootstrap/dist/css/bootstrap.css'
+    import 'bootstrap/dist/css/bootstrap.min.css'; // integrating bootstrap css
+    import 'bootstrap/dist/js/bootstrap.bundle.min.js'; // integrating bootstrap js
 
 2) Debugging (Writing debuggable code)
   Use redux dev tools extension
   Read the doc and config the app to use the extension.
   you can configure it for production also.
 
-3) Working with action creators
+  Refer: https://github.com/zalmoxisus/redux-devtools-extension
+
+3) Playaround with initial state with many properties inside
+    Refer: https://redux.js.org/usage/structuring-reducers/immutable-update-patterns
+
+4) Working with action creators
   // we can create custom event handlers -- they will be available in props
   const mapDispatchToProps = dispatch => {
     return {
@@ -688,7 +701,7 @@ Other Important Notes:
 
   export default connect(mapStateToProps, mapDispatchToProps)(PostList);
 
-4) Webpack and it's config 
+5) Webpack and it's config 
   npm run eject
 
 

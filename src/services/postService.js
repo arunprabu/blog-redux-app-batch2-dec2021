@@ -1,7 +1,7 @@
 // Step 12: 
 
 import axios from "axios";
-import { ADD_POST, GET_POSTS, GET_POST_BY_ID } from "../actions/types";
+import { ADD_POST, DELETE_POST, EDIT_POST, GET_POSTS, GET_POST_BY_ID } from "../actions/types";
 
 export const createPost = (formData) => {
   // Step 12.1 Send the above data to REST API Endpoint - https://jsonplaceholder.typicode.com/posts
@@ -60,6 +60,50 @@ export const getPostById = (postId) => {
         
         dispatch({
           type: GET_POST_BY_ID,
+          payload: res.data // one post details object
+        });
+      })
+      .catch((err) => { // error
+        console.log(err);
+      })
+      .finally(() => {
+        console.log('It is over');
+      });
+  }
+}
+
+export const deletePost = (postId ) => {
+  console.log(postId);
+  return (dispatch) => {
+    return axios.delete('https://jsonplaceholder.typicode.com/posts/'+postId)
+      .then((res) => { // success
+        console.log(res);
+        
+        dispatch({
+          type: DELETE_POST,
+          payload: res.data // one post details object
+        });
+      })
+      .catch((err) => { // error
+        console.log(err);
+      })
+      .finally(() => {
+        console.log('It is over');
+      });
+  }
+}
+
+export const updatePost = (formData) => {
+
+  console.log(formData);
+
+  return (dispatch) => {
+    return axios.put('https://jsonplaceholder.typicode.com/posts/'+formData.id, formData)
+      .then((res) => { // success
+        console.log(res);
+        
+        dispatch({
+          type: EDIT_POST,
           payload: res.data // one post details object
         });
       })

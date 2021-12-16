@@ -60,8 +60,8 @@ class PostList extends Component {
 const mapStateToProps = (state) => { // state will have the entire store data
   console.log(state);
   return {
-    // posts is the prop and state.posts is the store data
-    posts: state.posts 
+    // posts is the prop and state.posts.postList is the store data
+    posts: state.posts.postList
   }
 }
 // The above function will convert state to props for the PostList compoent.
